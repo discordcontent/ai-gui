@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GPT-4o Chat</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    #chatBox { border: 1px solid #ccc; background: #fff; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+    .message { margin-bottom: 10px; }
+    .user { color: blue; }
+    .bot { color: green; }
+  </style>
+</head>
+<body>
+  <h2>Chat with GPT-4o</h2>
+  <div id="chatBox"></div>
+  <input type="text" id="userInput" placeholder="Type your message..." style="width: 80%;">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    const chatBox = document.getElementById("chatBox");
+
+    const OPENAI_API_KEY = "sk-navy-1x1eUi0_dr54OWvOQHutTSewJlsI62nnsmnwIXxoN3s"; // ⚠️ DO NOT use real key for production
+
+    async function sendMessage() {
+      const inputField = document.getElementById("userInput");
+      const userMessage = inputField.value.trim();
+      if (!userMessage) return;
+
+      appendMessage("You", userMessage, "user");
+      inputField.value = "";
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4o",
+            messages: [{ role: "user", content: userMessage }]
+          })
+        });
+
+        const data = await response.json();
+        const reply = data.choices?.[0]?.message?.content || "No response.";
+        appendMessage("GPT-4o", reply, "bot");
+      } catch (error) {
+        console.error(error);
+        appendMessage("System", "Error calling GPT-4o.", "bot");
+      }
+    }
+
+    function appendMessage(sender, message, className) {
+      const div = document.createElement("div");
+      div.className = `message ${className}`;
+      div.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
